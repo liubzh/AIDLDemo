@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.binzo.aidldemo.BindingActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="10dp">
+        <Button
+            android:id="@+id/bind"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bind" />
+        <Button
+            android:id="@+id/unbind"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Unbind" />
+        <Button
+            android:id="@+id/RemoteService_getPid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="RemoteService.getPid" />
+        <Button
+            android:id="@+id/SecondaryService_getPid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SecondaryService.getPid" />
+        <Button
+            android:id="@+id/kill"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kill ISecondary service" />
+        <TextView
+            android:id="@+id/callback"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hello World!"
+            android:textSize="18sp"
+            android:gravity="center" />
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
