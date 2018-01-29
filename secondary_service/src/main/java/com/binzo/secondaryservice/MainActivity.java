@@ -17,6 +17,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.binzo.secondaryservice.ISecondary;
+
 /**
  * Created by liubingzhao on 2018/1/26.
  */
@@ -28,12 +30,11 @@ public class BindingActivity extends AppCompatActivity {
     /*
     /** The primary interface we will be calling on the service. */
     IRemoteService mService = null;
+    /** Another interface we use on the service. */
+    ISecondary mSecondaryService = null;
 
     Button mKillButton;
-    Button mGetPidButton;
-    Button mCallbackButton;
-    Button mParcelButton;
-    TextView mText;
+    TextView mCallbackText;
 
     private boolean mIsBound;
 
@@ -56,15 +57,28 @@ public class BindingActivity extends AppCompatActivity {
         mKillButton.setOnClickListener(mKillListener);
         mKillButton.setEnabled(false);
 
-        mParcelButton = findViewById(R.id.parcel);
-        mParcelButton.setOnClickListener(new View.OnClickListener(){
+        button = findViewById(R.id.RemoteService_getPid);
+        button.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 try {
-                    if (mService != null) {
-                        mService.transferInParcel(new BasicTypesParcel(1,1,false,1,1, "1"));
+                    mCallbackText.setText("pid: " + mService.getPid());
+                } catch (RemoteException e) {
+                    Log.e(TAG, e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        button = findViewById(R.id.SecondaryService_getPid);
+        button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                try {
+                    if (mSecondaryService != null) {
+                        mCallbackText.setText("pid: " + mSecondaryService.getPid());
                     } else {
-                        mText.setText("Service is null.");
+                        mCallbackText.setText("Service is null.");
                     }
                 } catch (RemoteException e) {
                     Log.e(TAG, e.getMessage());
@@ -72,42 +86,9 @@ public class BindingActivity extends AppCompatActivity {
                 }
             }
         });
-        mParcelButton.setEnabled(false);
 
-        mCallbackButton = findViewById(R.id.callback);
-        mCallbackButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                try {
-                    if (mService != null) {
-                        mService.testCallback();
-                    } else {
-                        mText.setText("Service is null.");
-                    }
-                } catch (RemoteException e) {
-                    Log.e(TAG, e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-        });
-        mCallbackButton.setEnabled(false);
-
-        mGetPidButton = findViewById(R.id.getpid);
-        mGetPidButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                try {
-                    mText.setText("pid: " + mService.getPid());
-                } catch (RemoteException e) {
-                    Log.e(TAG, e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-        });
-        mGetPidButton.setEnabled(false);
-
-        mText = (TextView)findViewById(R.id.text);
-        mText.setText("Not attached.");
+        mCallbackText = (TextView)findViewById(R.id.callback);
+        mCallbackText.setText("Not attached.");
     }
 
     /**
@@ -122,12 +103,8 @@ public class BindingActivity extends AppCompatActivity {
             // service through an IDL interface, so get a client-side
             // representation of that from the raw service object.
             mService = IRemoteService.Stub.asInterface(service);
-            mParcelButton.setEnabled(true);
-            mCallbackButton.setEnabled(true);
-            mGetPidButton.setEnabled(true);
             mKillButton.setEnabled(true);
-
-            mText.setText("Attached.");
+            mCallbackText.setText("Attached.");
 
             // We want to monitor the service for as long as we are
             // connected to it.
@@ -149,15 +126,30 @@ public class BindingActivity extends AppCompatActivity {
             // This is called when the connection with the service has been
             // unexpectedly disconnected -- that is, its process crashed.
             mService = null;
-            mParcelButton.setEnabled(false);
-            mCallbackButton.setEnabled(false);
-            mGetPidButton.setEnabled(false);
             mKillButton.setEnabled(false);
-            mText.setText("Disconnected.");
+            mCallbackText.setText("Disconnected.");
 
             // As part of the sample, tell the user what happened.
             Toast.makeText(BindingActivity.this, R.string.remote_service_disconnected,
                     Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    /**
+     * Class for interacting with the secondary interface of the service.
+     */
+    private ServiceConnection mSecondaryConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // Connecting to a secondary interface is the same as any
+            // other interface.
+            mSecondaryService = ISecondary.Stub.asInterface(service);
+            mKillButton.setEnabled(true);
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            mSecondaryService = null;
+            mKillButton.setEnabled(false);
         }
     };
 
@@ -170,8 +162,15 @@ public class BindingActivity extends AppCompatActivity {
             Intent intent = new Intent(BindingActivity.this, RemoteService.class);
             intent.setAction(IRemoteService.class.getName());
             bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
+//            intent.setAction(ISecondary.class.getName());
+            intent = new Intent();
+            intent.setComponent(new ComponentName("com.binzo.secondaryservice",
+                    "com.binzo.secondaryservice.SecondaryService"));
+//            bindService(intent, mSecondaryConnection, Context.BIND_AUTO_CREATE);
+            startService(intent);
             mIsBound = true;
-            mText.setText("BindingActivity.");
+            mCallbackText.setText("BindingActivity.");
         }
     };
 
@@ -191,12 +190,10 @@ public class BindingActivity extends AppCompatActivity {
 
                 // Detach our existing connection.
                 unbindService(mConnection);
-                mParcelButton.setEnabled(false);
-                mCallbackButton.setEnabled(false);
-                mGetPidButton.setEnabled(false);
+                unbindService(mSecondaryConnection);
                 mKillButton.setEnabled(false);
                 mIsBound = false;
-                mText.setText("Unbinding.");
+                mCallbackText.setText("Unbinding.");
             }
         }
     };
@@ -206,9 +203,9 @@ public class BindingActivity extends AppCompatActivity {
             // To kill the process hosting our service, we need to know its
             // PID.  Conveniently our service has a call that will return
             // to us that information.
-            if (mService != null) {
+            if (mSecondaryService != null) {
                 try {
-                    int pid = mService.getPid();
+                    int pid = mSecondaryService.getPid();
                     // Note that, though this API allows us to request to
                     // kill any process based on its PID, the kernel will
                     // still impose standard restrictions on which PIDs you
@@ -218,7 +215,7 @@ public class BindingActivity extends AppCompatActivity {
                     // sharing a common UID will also be able to kill each
                     // other's processes.
                     Process.killProcess(pid);
-                    mText.setText("Killed service process.");
+                    mCallbackText.setText("Killed service process.");
                 } catch (RemoteException ex) {
                     // Recover gracefully from the process hosting the
                     // server dying.
@@ -258,7 +255,7 @@ public class BindingActivity extends AppCompatActivity {
         @Override public void handleMessage(Message msg) {
             switch (msg.what) {
                 case BUMP_MSG:
-                    mText.setText("Received from service: " + msg.arg1);
+                    mCallbackText.setText("Received from service: " + msg.arg1);
                     break;
                 default:
                     super.handleMessage(msg);

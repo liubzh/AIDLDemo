@@ -21,22 +21,27 @@
             android:layout_height="wrap_content"
             android:text="Unbind" />
         <Button
-            android:id="@+id/RemoteService_getPid"
+            android:id="@+id/parcel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="RemoteService.getPid" />
+            android:text="Parcel" />
         <Button
-            android:id="@+id/SecondaryService_getPid"
+            android:id="@+id/callback"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="SecondaryService.getPid" />
+            android:text="callback" />
+        <Button
+            android:id="@+id/getpid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="getPid" />
         <Button
             android:id="@+id/kill"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Kill ISecondary service" />
+            android:text="Kill" />
         <TextView
-            android:id="@+id/callback"
+            android:id="@+id/text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Hello World!"

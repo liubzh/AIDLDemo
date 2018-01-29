@@ -43,8 +43,19 @@ public class RemoteService extends Service {
             Log.i(TAG, "basicTypes(...)");
         }
 
+        @Override
+        public void transferInParcel(BasicTypesParcel parcel) throws RemoteException {
+            Log.i(TAG, "transferInParcel() parcel: " + parcel);
+        }
+
         public int getPid(){
             Log.i(TAG, "getPid()");
+            return Process.myPid();
+        }
+
+        @Override
+        public void testCallback() throws RemoteException {
+            Log.i(TAG, "testCallback()");
             if (mCallback != null) {
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -56,9 +67,8 @@ public class RemoteService extends Service {
                             e.printStackTrace();
                         }
                     }
-                }, 3000/* 3 seconds */);
+                }, 1500/* 1.5 seconds */);
             }
-            return Process.myPid();
         }
 
         @Override
